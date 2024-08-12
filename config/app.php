@@ -136,4 +136,13 @@ return [
         'whatsapp' => env('SOCIAL_WHATSAPP', 'https://api.whatsapp.com/default/'),
         'tiktok' => env('SOCIAL_TIKTOK', 'https://www.tiktok.com/@default'),
     ],
+
+    'canvolt_admin' => [
+        'url' => env('CANVOLT_ADMIN_URL', 'http://127.0.0.1:8001')
+    ],
+
+    'recaptcha' => [
+        'site_key' => env('RECATPCHA_SITE_KEY'),
+        'secret_key' => env('RECATPCHA_SECRET_KEY'),
+    ],
 ];

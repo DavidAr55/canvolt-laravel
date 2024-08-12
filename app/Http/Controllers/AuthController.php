@@ -232,4 +232,9 @@ class AuthController extends Controller
             return redirect('/')->with('error', 'No se pudo verificar el correo electrónico. El usuario no existe.');
         }
     }
+
+    public function loginRedirect()
+    {
+        return redirect('/iniciar-sesion')->with('info', 'Antes de continuar con la compra necesitas iniciar sesión.');
+    }
 }

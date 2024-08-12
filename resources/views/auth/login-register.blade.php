@@ -16,7 +16,7 @@
                 <a href="#" class="social"><i class="fa-brands fa-google"></i></a>
             </div>
             <span>O utiliza tu correo electrónico</span>
-            <input type="text" name="name" placeholder="Nombre" value="{{ old('name') }}" required/>
+            <input type="text" name="name" placeholder="Nombre de usuario" value="{{ old('name') }}" required/>
             @error('name')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
@@ -52,7 +52,7 @@
             <input type="password" name="password" placeholder="Contraseña" required/>
             <a href="#">¿Olvidaste tu contraseña?</a>
             <button type="submit" class="btn-1">Iniciar sesión</button>
-            <img src="{{ asset('images/logo-4-canvolt.png') }}" style="height: 50px; margin-top: 25px;" alt="Canvolt">
+            <a href="{{ url('/inicio') }}"><img src="{{ asset('images/logo-4-canvolt.png') }}" style="height: 50px; margin-top: 25px;" alt="Canvolt"></a>
         </form>
     </div>
     <div class="overlay-container">
@@ -61,7 +61,7 @@
                 <h1>¿Ya tienes una cuenta?</h1>
                 <p>Para mantenerse conectado con nosotros, inicie sesión con su información personal</p>
                 <button class="ghost" id="signIn">Iniciar sesión</button>
-                <img src="{{ asset('images/logo-5-canvolt.png') }}" style="height: 50px; margin-top: 25px;" alt="Canvolt">
+                <a href="{{ url('/inicio') }}"><img src="{{ asset('images/logo-5-canvolt.png') }}" style="height: 50px; margin-top: 25px;" alt="Canvolt"></a>
             </div>
             <div class="overlay-panel overlay-right">
                 <h1>¡Bienvenido a Canvolt!</h1>
