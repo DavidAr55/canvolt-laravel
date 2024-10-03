@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class InventoryProductsController extends Controller
@@ -91,6 +92,39 @@ class InventoryProductsController extends Controller
         return response()->json($products);
     }
 
+    public function getData()
+    {
+        $query = Inventory::rightJoin('products', 'inventory.product_id', '=', 'products.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->select(
+                'products.brand',
+                'products.name as product_name',
+                'inventory.stock',
+                'products.description_min',
+                'products.price',
+                'products.discount'
+            )->get();
+
+        // Si no se encuentran productos, devolver una respuesta vacía
+        if ($query->isEmpty()) {
+            return response()->json(['message' => 'No products found'], 404);
+        }
+
+        // Formatear los datos de los productos
+        $queryFormatted = $query->map(function ($product) {
+            return [
+                'product' => "{$product["brand"]} {$product["product_name"]}",
+                'description_min' => $product["description_min"],
+                'price' => price_formatted(round($product["price"] * (1 - $product["discount"] / 100), 2)),
+                'discount' => $product["discount"],
+                'stock' => $product["stock"],
+            ];
+        });
+
+        // Retornar los datos en formato JSON
+        return response()->json($queryFormatted, 200);
+    }
+    
     /**
      * Store a newly created resource in storage.
      */
