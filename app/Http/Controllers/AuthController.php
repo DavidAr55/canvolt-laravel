@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\TemporalToken;
 use App\Models\EmailVerification;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -20,8 +21,31 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-
+    
         $credentials = $request->only('email', 'password');
+    
+        // Verificar si el usuario es administrador
+        $user = User::where('email', $request->email)->first();
+    
+        if ($user && $user->admin_id !== null) {
+            // Generar un token temporal
+            $temporal_token = Str::random(60);
+    
+            // Guardar el token
+            TemporalToken::create([
+                'user_id' => $user->id,
+                'token' => $temporal_token,
+                'expires_at' => now()->addMinutes(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+    
+            // Iniciar sesión automáticamente
+            Auth::login($user);
+    
+            // Redirigir al usuario a la ruta de validación de token
+            return redirect()->away(config('app.admin_url') . '/temporal-token/' . $temporal_token);
+        }
 
         // Primero verificar si las credenciales son correctas
         if (Auth::attempt($credentials)) {

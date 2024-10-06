@@ -68,7 +68,7 @@
                         @endif
                         </div>
                     </div>
-                    <img class="rx-lazy" src="{{ asset('images/assets/placeholder-all.png') }}" data-src="{{ config('app.canvolt_admin.url') . '/storage/' . $cheapest->photo_main }}" alt="{{ $product->brand }} {{ $product->name }}">
+                    <img class="rx-lazy" src="{{ asset('images/assets/placeholder-all.png') }}" data-src="{{ config('app.canvolt_admin.url') . '/storage/' . $cheapest->photo_main }}" alt="{{ $cheapest->brand }} {{ $cheapest->name }}">
                 </a>
                 <a href="{{ url('/productos/piezas') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-categ-2.png');">
                     <div class="dark-categ-info">
