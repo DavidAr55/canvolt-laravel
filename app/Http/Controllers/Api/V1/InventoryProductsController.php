@@ -97,6 +97,7 @@ class InventoryProductsController extends Controller
         $query = Inventory::rightJoin('products', 'inventory.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
             ->select(
+                'products.category_id',
                 'products.brand',
                 'products.name as product_name',
                 'inventory.stock',
@@ -113,7 +114,8 @@ class InventoryProductsController extends Controller
         // Formatear los datos de los productos
         $queryFormatted = $query->map(function ($product) {
             return [
-                'product' => "{$product["brand"]} {$product["product_name"]}",
+                'type' => ($product["category_id"] == 4) ? 'service' : 'product',
+                'product' => "{$product["brand"]} - {$product["product_name"]}",
                 'description_min' => $product["description_min"],
                 'price' => price_formatted(round($product["price"] * (1 - $product["discount"] / 100), 2)),
                 'discount' => $product["discount"],
