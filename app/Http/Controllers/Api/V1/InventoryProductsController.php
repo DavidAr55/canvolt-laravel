@@ -102,6 +102,7 @@ class InventoryProductsController extends Controller
                 'products.name as product_name',
                 'inventory.stock',
                 'products.description_min',
+                'products.photo_main',
                 'products.price',
                 'products.discount'
             )->get();
@@ -117,6 +118,7 @@ class InventoryProductsController extends Controller
                 'type' => ($product["category_id"] == 4) ? 'service' : 'product',
                 'product' => "{$product["brand"]} - {$product["product_name"]}",
                 'description_min' => $product["description_min"],
+                'photo_main' => $product["photo_main"],
                 'price' => price_formatted(round($product["price"] * (1 - $product["discount"] / 100), 2)),
                 'discount' => $product["discount"],
                 'stock' => $product["stock"],

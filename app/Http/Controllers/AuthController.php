@@ -52,7 +52,7 @@ class AuthController extends Controller
             $user = Auth::user();
             
             // Si las credenciales son correctas, verificar si el correo electrónico ha sido verificado
-            if ($user->email_verified_at === null) {
+            if ($user->verified_at === null) {
                 Auth::logout();
                 return redirect()->back()->with('warning', 'Debes verificar tu correo electrónico antes de iniciar sesión.');
             }
@@ -242,7 +242,7 @@ class AuthController extends Controller
         // Verificar si el usuario existe
         $user = $verification->user;
         if ($user) {
-            $user->email_verified_at = now();
+            $user->verified_at = now();
             $user->save();
 
             // Eliminar el token de verificación
