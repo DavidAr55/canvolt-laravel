@@ -90,6 +90,36 @@
                 </div>
 
                 <div id="store-pickup-options" class="mt-3">
+                    <h5 class="text-light">Opciones de entrega</h5>
+                    <div class="form-group">
+                        <label><input type="radio" name="payment-method" value="in-store"> Pagar en sucursal</label><br>
+                        <label><input type="radio" name="payment-method" value="online" checked> Pago en Línea</label>
+                    </div>
+                </div>
+
+                <div id="home-delivery-options" class="mt-3" style="display: none;">
+                    <h5 class="text-light">Opciones de Envío</h5>
+                    <div class="form-group">
+                        @foreach ($shippingMethods as $shippingMethod)
+                            <label><input type="radio" name="shipping-option" value="{{ $shippingMethod->id }}"> <span style="color: var(--background-7);">{{ price_formatted($shippingMethod->cost) }}</span> {{ $shippingMethod->name }}</label><br>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna 2: Seleccion de sucursal -->
+            <div class="col-md-3 container-info-pago">
+                <h4 class="text-light">Sucursal de Entrega</h4>
+                <div class="form-group">
+                    <div class="subscribe-form">
+                        <select class="inp-form" style="padding: 10px 10px; margin: 15px 0; width: 100%;" id="shipping-method">
+                            <option value="store-pickup" selected>Recoger en una sucursal Canvolt</option>
+                            <option value="home-delivery">Envío a domicilio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="store-pickup-options" class="mt-3">
                     <h5 class="text-light">Opciones de Recogida</h5>
                     <div class="form-group">
                         <label><input type="radio" name="payment-method" value="in-store"> Pagar en sucursal</label><br>
@@ -108,7 +138,7 @@
             </div>
         @endauth
 
-        <!-- Columna 2: Información del Envío y Total -->
+        <!-- Columna 4: Información del Envío y Total -->
         <div class="col-md-4 container-info-pago">
             <h4 class="text-light" style="margin-bottom: 15px;">Resumen del Pedido</h4>
             <div class="form-group price-section">

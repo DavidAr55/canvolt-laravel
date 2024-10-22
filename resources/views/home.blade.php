@@ -15,10 +15,10 @@
     </ul>
     <div class="dark-slider">
         @foreach($products as $product)
-            <div class="dark-slide" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/bg-slider-2.png');">
+            <div class="dark-slide" style="background-image: url('https://assets.canvolt.mx/bg-slider-2.png');">
                 <span class="bg-text-left">{{ $product->brand }}</span>
                 <span class="bg-text-right">Scooter</span>
-                <span class="effect-bg-dark" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/effect-dark-slider.svg');"></span>
+                <span class="effect-bg-dark" style="background-image: url('https://assets.canvolt.mx/effect-dark-slider.svg');"></span>
                 <div class="container">
                     <div class="dark-slide-info">
                         <h2 class="name">{{ $product->name }}</h2>
@@ -55,7 +55,7 @@
     <div class="container">
         <div class="dark-category-cover row">
             <div class="dark-category-left col-md-8">
-                <a href="{{ url('/productos/todos/'.$cheapest->brand.' '.$cheapest->name) }}" class="dark-category-item dark-category-big" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-categ-1.png');">
+                <a href="{{ url('/productos/todos/'.$cheapest->brand.' '.$cheapest->name) }}" class="dark-category-item dark-category-big" style="background-image: url('https://assets.canvolt.mx/dark-categ-1.png');">
                     <div class="dark-categ-info">
                         <div class="name">encuentra tu scooter</div>
                         <h3 class="title">{{ $cheapest->brand }} {{ $cheapest->name }}</h3>
@@ -70,14 +70,14 @@
                     </div>
                     <img class="rx-lazy" src="{{ asset('images/assets/placeholder-all.png') }}" data-src="{{ config('app.canvolt_admin.url') . '/storage/' . $cheapest->photo_main }}" alt="{{ $cheapest->brand }} {{ $cheapest->name }}">
                 </a>
-                <a href="{{ url('/productos/piezas') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-categ-2.png');">
+                <a href="{{ url('/productos/piezas') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.mx/dark-categ-2.png');">
                     <div class="dark-categ-info">
                         <div class="name">encuentra la pieza que necesitas</div>
                         <h3 class="title">piezas</h3>
                     </div>
                     <img class="rx-lazy" src="{{ asset('images/assets/placeholder-all.png') }}" data-src="{{ config('app.canvolt_admin.url') . '/storage/' . $part->photo_main }}" alt="{{ $part->brand }} {{ $part->name }}">
                 </a>
-                <a href="{{ url('/productos/accesorios') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-categ-2.png');">
+                <a href="{{ url('/productos/accesorios') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.mx/dark-categ-2.png');">
                     <div class="dark-categ-info">
                         <div class="name">todos los accesorios para scooter</div>
                         <h3 class="title">accesorios</h3>
@@ -86,7 +86,7 @@
                 </a>
             </div>
             <div class="dark-category-right col-md-4">
-                <a href="{{ url('/productos/scooters') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-categ-3.png');">
+                <a href="{{ url('/productos/scooters') }}" class="dark-category-item" style="background-image: url('https://assets.canvolt.mx/dark-categ-3.png');">
                     <div class="dark-categ-info">
                         <h3 class="title">Todos nuestros scooters</h3>
                         <p>¡Encuentra lo que estás buscando ahora!</p>
@@ -105,21 +105,21 @@
         <h2 class="title">nuestro servicios</h2>
         <div class="dark-advantage-wrap row">
             <div class="col-sm-4 dark-advantage-col">
-                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-adv-bg.png');">
+                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.mx/dark-adv-bg.png');">
                     <span class="mask"></span>
                     <img src="{{ asset('images/assets/advantages-dark-1.svg') }}" class="service-icon" alt="icon">
                     <h5>Diagnostico de Scooter <span>por $350.00 MXN</span></h5>
                 </div>
             </div>
             <div class="col-sm-4 dark-advantage-col">
-                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-adv-bg.png');">
+                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.mx/dark-adv-bg.png');">
                     <span class="mask"></span>
                     <img src="{{ asset('images/assets/advantages-dark-2.svg') }}" class="service-icon" alt="icon">
                     <h5>Cambio de ruedas <span>de cualquier medida</span></h5>
                 </div>
             </div>
             <div class="col-sm-4 dark-advantage-col">
-                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-adv-bg.png');">
+                <div class="dark-advantage-item" style="background-image: url('https://assets.canvolt.mx/dark-adv-bg.png');">
                     <span class="mask"></span>
                     <img src="{{ asset('images/assets/advantages-dark-3.svg') }}" class="service-icon" alt="icon">
                     <h5>Servicios generales<span>Frenos, suspenciones, etc</span></h5>
@@ -428,9 +428,9 @@
 --}}
 
 <!-- S-FEEDBACK -->
-<section class="s-feedback s-dark-feedback" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/bg-dark-feedback.jpg');">
-    <span class="effwct-bg-feedback" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-effect-img.svg');"></span>
-    <span class="mask" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-effect-bg.png');"></span>
+<section class="s-feedback s-dark-feedback" style="background-image: url('https://assets.canvolt.mx/bg-dark-feedback.jpg');">
+    <span class="effwct-bg-feedback" style="background-image: url('https://assets.canvolt.mx/dark-effect-img.svg');"></span>
+    <span class="mask" style="background-image: url('https://assets.canvolt.mx/dark-effect-bg.png');"></span>
     <div class="container">
         <h2 class="title">Comentarios</h2>
         <div class="feedback-slider">
@@ -616,10 +616,10 @@
 <!--== S-CLIENTS END ==-->
 
 <!--= S-BANNER =-->
-<section class="s-banner s-dark-banner" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-bg-banner.jpg');">
-    <span class="mask" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/effect-bg-banner.png');"></span>
+<section class="s-banner s-dark-banner" style="background-image: url('https://assets.canvolt.mx/dark-bg-banner.jpg');">
+    <span class="mask" style="background-image: url('https://assets.canvolt.mx/effect-bg-banner.png');"></span>
     <div class="banner-img">
-        <div class="banner-img-bg" style="background-image: url('https://assets.canvolt.com.mx/assets-canvolt/dark-effect-banner.svg');"></div>
+        <div class="banner-img-bg" style="background-image: url('https://assets.canvolt.mx/dark-effect-banner.svg');"></div>
         <img class="wow fadeInLeftBlur rx-lazy" data-wow-duration=".8s" data-wow-delay=".2s" src="{{ asset('images/assets/placeholder-all.png') }}" data-src="{{ config('app.canvolt_admin.url') . '/storage/' . $cheapest->photo_main }}" alt="{{ $product->brand }} {{ $product->name }}">
     </div>
     <div class="container">

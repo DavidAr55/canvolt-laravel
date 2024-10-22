@@ -54,6 +54,7 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
     'admin_url' => env('CANVOLT_ADMIN_URL', 'http://127.0.0.1:8001'),
+    'assets_url' => env('CANVOLT_ASSETS_URL', 'https://assets.canvolt.mx/'),
 
     /*
     |--------------------------------------------------------------------------
