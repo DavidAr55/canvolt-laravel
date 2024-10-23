@@ -9609,10 +9609,27 @@ body.modal {
     transition: all 300ms;
 }
 
-.container-info-pago {
-    border: 2px solid var(--background-10);
+.payment-form {
+    margin: auto; 
+    margin-top: 25px;
+    position: absolute; 
+    bottom: 30px;
+}
+
+.payment-form-bordered {
     padding: 25px;
-    margin: 15px;
+    margin: 20px 0;
+    border: 2px solid var(--background-10);
+}
+
+.payment-info {
+    width: 1300px;
+    border: 2px solid var(--background-10);
+    margin: 0px;
+}
+
+.container-payment-info {
+    padding: 25px;
 }
 
 .inp-form option {

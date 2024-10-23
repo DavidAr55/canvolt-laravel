@@ -9,7 +9,7 @@
 <div class="container-my-products">
     <h2 class="text-light mb-3 address-title">Dirección de envío</h2>
     <div class="row justify-content-md-center">
-        <div class="col-6 justify-center container-info-pago">
+        <div class="col-6 justify-center payment-form-bordered">
             <h4 class="text-light mb-3">Datos personales</h4>
             <form id="personal-info-form" class="personal-info-form" action="{{ route('cart.save.client') }}" method="post" novalidate>
                 @csrf
@@ -18,7 +18,7 @@
                 <div class="container-inputs-extra">
                     <div class="subscribe-form">
                         <i class="fas fa-signature"></i>
-                        <input class="inp-form" id="first_name" type="text" name="first_name" placeholder="Nombre" value="{{ $purchaseInformation['client']->first_name ?? '' }}" {{ ($purchaseInformation['client']) ? 'disabled' : '' }} required>
+                        <input class="inp-form" id="name" type="text" name="name" placeholder="Nombre" value="{{ $purchaseInformation['client']->name ?? '' }}" {{ ($purchaseInformation['client']) ? 'disabled' : '' }} required>
                     </div>
                     <div class="error-message" style="color: red; display: none; font-size: 14px; margin-top: 5px;">
                         El nombre es obligatorio
@@ -138,7 +138,7 @@
                     <div class="col-4 justify-center">
                         <div class="d-flex">
                             <input type="hidden" name="saved_address">
-                            <input type="hidden" name="saved_client" value="{{ $purchaseInformation['client']->token ?? '' }}">
+                            <input type="hidden" name="saved_client" value="{{ $purchaseInformation['client']->user_token ?? '' }}">
                             <button type="submit" class="btn btn-form btn-green"><span>Continuar</span></button>
                         </div>
                     </div>
@@ -146,13 +146,13 @@
             </form>
         </div>
         <div class="col-4 justify-center">
-            <div id="address-container" class="container-info-pago">
+            <div id="address-container" class="payment-form-bordered">
                 <h4 class="text-light mb-3">Tus direcciones</h4>
                 <ul id="address-list" class="description-toggle">
                     <!-- Las direcciones se agregarán aquí dinámicamente -->
                 </ul>
             </div>
-            <div class="container-info-pago">
+            <div class="payment-form-bordered">
                 <h4 class="text-light" style="margin-bottom: 15px;">Resumen del Pedido</h4>
                 <div class="form-group price-section">
                     @foreach ($purchaseInformation['products'] as $product)
@@ -170,7 +170,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // URL de la API
-        const apiUrl = 'http://127.0.0.1:8000/api/v1/users-address';
+        const apiUrl = `http://127.0.0.1:8000/api/v1/users-address/{{ Auth::user()->user_token }}`;
 
         // Hacer la solicitud a la API
         fetch(apiUrl)
@@ -183,6 +183,8 @@
                     addressContainer.style.display = 'none';
                     return;
                 }
+
+                console.log("data: ",data);
 
                 data.forEach((address) => {
                     const addressItem = document.createElement('li');
@@ -323,7 +325,7 @@
             let isValid = true;
 
             const fieldsToValidate = [
-                { id: 'first_name', errorMessage: 'El nombre es obligatorio' },
+                { id: 'name', errorMessage: 'El nombre es obligatorio' },
                 { id: 'last_name', errorMessage: 'Los apellidos son obligatorios' },
                 { id: 'phone', errorMessage: 'El numero de teléfono ingresado no es válido' },
                 { id: 'street', errorMessage: 'La calle es obligatoria' },

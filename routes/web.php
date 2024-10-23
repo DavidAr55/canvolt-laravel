@@ -32,4 +32,4 @@ Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remov
 Route::get('/carrito', [CartController::class, 'viewCart'])->name('cart');
 Route::post('/carito/verificar/compra', [CartController::class, 'checkoutForm'])->name('cart.checkout.form');
 Route::post('/carrito/pago', [CartController::class, 'validateClientData'])->name('cart.save.client');
-
+Route::get('/carrito/pago/online', [CartController::class, 'payOnline'])->name('cart.pay.online');

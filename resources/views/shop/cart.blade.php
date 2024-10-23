@@ -75,10 +75,10 @@
             @endforeach
         </tbody>
     </table>
-    <div class="row" style="margin-top: 20px;">
+    <div class="row payment-info">
         <!-- Columna 1: Tipo de Envío -->
          @auth
-            <div class="col-md-4 container-info-pago">
+            <div class="col-md-4 container-payment-info">
                 <h4 class="text-light">Tipo de Entrega</h4>
                 <div class="form-group">
                     <div class="subscribe-form">
@@ -92,8 +92,8 @@
                 <div id="store-pickup-options" class="mt-3">
                     <h5 class="text-light">Opciones de entrega</h5>
                     <div class="form-group">
-                        <label><input type="radio" name="payment-method" value="in-store"> Pagar en sucursal</label><br>
-                        <label><input type="radio" name="payment-method" value="online" checked> Pago en Línea</label>
+                        <label><input type="radio" name="payment_method" value="in-store" checked> Pagar en sucursal</label><br>
+                        <label><input type="radio" name="payment_method" value="online"> Pago en Línea</label>
                     </div>
                 </div>
 
@@ -108,40 +108,27 @@
             </div>
 
             <!-- Columna 2: Seleccion de sucursal -->
-            <div class="col-md-3 container-info-pago">
-                <h4 class="text-light">Sucursal de Entrega</h4>
+            <div class="col-md-4 container-payment-info" id="branch-office-container">
+                <h4 class="text-light">Sucursal Seleccionada</h4>
                 <div class="form-group">
                     <div class="subscribe-form">
-                        <select class="inp-form" style="padding: 10px 10px; margin: 15px 0; width: 100%;" id="shipping-method">
-                            <option value="store-pickup" selected>Recoger en una sucursal Canvolt</option>
-                            <option value="home-delivery">Envío a domicilio</option>
+                        <select class="inp-form" style="padding: 10px 10px; margin: 15px 0; width: 100%;" name="branch_office" id="branch-office">
+                            @foreach ($branchOffices as $branchOffice)
+                                <option value="{{ $branchOffice->id }}">{{ $branchOffice->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
-
                 <div id="store-pickup-options" class="mt-3">
-                    <h5 class="text-light">Opciones de Recogida</h5>
-                    <div class="form-group">
-                        <label><input type="radio" name="payment-method" value="in-store"> Pagar en sucursal</label><br>
-                        <label><input type="radio" name="payment-method" value="online" checked> Pago en Línea</label>
-                    </div>
-                </div>
-
-                <div id="home-delivery-options" class="mt-3" style="display: none;">
-                    <h5 class="text-light">Opciones de Envío</h5>
-                    <div class="form-group">
-                        @foreach ($shippingMethods as $shippingMethod)
-                            <label><input type="radio" name="shipping-option" value="{{ $shippingMethod->id }}"> <span style="color: var(--background-7);">{{ price_formatted($shippingMethod->cost) }}</span> {{ $shippingMethod->name }}</label><br>
-                        @endforeach
-                    </div>
+                    <iframe src="{{ $branchOffices->first()->map_url }}" width="100%" height="250px" frameborder="0"></iframe>
                 </div>
             </div>
         @endauth
 
         <!-- Columna 4: Información del Envío y Total -->
-        <div class="col-md-4 container-info-pago">
+        <div class="col-md-4 container-payment-info">
             <h4 class="text-light" style="margin-bottom: 15px;">Resumen del Pedido</h4>
-            <div class="form-group price-section">
+            <div class="form-group price-section" style="padding-bottom: 85px;">
                 <h5 class="text-light">Envío: <span id="shipping-price" style="color: var(--background-7);">{{ price_formatted(0) }}</span></h5>
                 <h5 class="text-light">Total: <span id="total-price" style="color: var(--background-7);">{{ price_formatted($totalPrice) }}</span></h5>
             </div>
@@ -151,7 +138,7 @@
                 </div>
             @endguest
             @auth
-                <form id="checkout-form" action="{{ route('cart.checkout.form') }}" method="post" novalidate>
+                <form id="checkout-form" action="{{ route('cart.checkout.form') }}" class="payment-form" method="post" novalidate>
                     @csrf
                     <label>
                         <input type="checkbox" name="terms" id="terms-checkbox" required title="Si quieres continuar tienes que aceptar los términos y condiciones">
@@ -162,11 +149,11 @@
                     </div>
 
                     <input type="hidden" id="input-shipping-method" name="input_shipping_method">
-                    <input type="hidden" id="input-payment-method" name="input_payment_method">
+                    <input type="hidden" id="input-payment_method" name="input_payment_method">
                     <input type="hidden" id="input-shipping-id" name="input_shipping_id">
                     <input type="hidden" id="input-terms" name="input_terms">
 
-                    <div style="height: 100px; margin: auto; margin-top: 25px;">
+                    <div style="margin: auto; margin-top: 15px;">
                         <button type="submit" class="btn btn-orange" style="width: 100%;"><span>Continuar compra</span></button>
                     </div>
                 </form>
@@ -189,16 +176,18 @@
     });
 
     document.addEventListener('DOMContentLoaded', function () {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
         const shippingMethod = document.getElementById('shipping-method');
         const storePickupOptions = document.getElementById('store-pickup-options');
         const homeDeliveryOptions = document.getElementById('home-delivery-options');
+        const branchOfficeContainer = document.getElementById('branch-office-container');
         const shippingPriceElement = document.getElementById('shipping-price');
         const totalPriceElement = document.getElementById('total-price');
         let totalPrice = parseFloat('{{ $totalPrice }}');
 
         // Campos hidden
         const inputShippingMethod = document.getElementById('input-shipping-method');
-        const inputPaymentMethod = document.getElementById('input-payment-method');
+        const inputPaymentMethod = document.getElementById('input-payment_method');
         const inputShippingPrice = document.getElementById('input-shipping-id');
 
         // Actualiza el campo hidden cuando cambia el método de envío
@@ -208,11 +197,17 @@
             if (this.value === 'store-pickup') {
                 storePickupOptions.style.display = 'block';
                 homeDeliveryOptions.style.display = 'none';
+                if (paymentMethod.value === 'in-store') {
+                    branchOfficeContainer.style.display = 'block';
+                } else {
+                    branchOfficeContainer.style.display = 'none';
+                }
                 shippingPriceElement.textContent = priceFormatted(0.00);
                 inputShippingPrice.value = '0.00';
             } else {
                 storePickupOptions.style.display = 'none';
                 homeDeliveryOptions.style.display = 'block';
+                branchOfficeContainer.style.display = 'none';
                 updateShippingPrice();
             }
             updateTotalPrice();
@@ -228,7 +223,7 @@
         });
 
         // Actualiza el campo hidden del método de pago
-        const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
+        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
         paymentMethods.forEach(method => {
             method.addEventListener('change', function () {
                 inputPaymentMethod.value = this.value;
@@ -262,7 +257,7 @@
 
         // Inicializa los valores al cargar la página
         inputShippingMethod.value = shippingMethod.value;
-        const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
+        const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
         if (selectedPaymentMethod) {
             inputPaymentMethod.value = selectedPaymentMethod.value;
         }

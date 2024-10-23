@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use App\Models\User;
 use App\Models\Product;
 use App\Models\Inventory;
+use App\Models\BranchOffice;
 use App\Models\ShippingMethod;
 use App\Services\MercadoPagoService;
 use Illuminate\Support\Facades\Auth;
@@ -65,11 +67,15 @@ class CartController extends Controller
         // Get the shipping methods to retorun it to the view
         $shippingMethods = ShippingMethod::where('is_active', 1)->get();
 
+        // Get the branch offices to return it to the view
+        $branchOffices = BranchOffice::where('status', 'active')->get();
+
         // Return the view with the product details, total price, and preference ID
         return view('shop.cart', [
             'products'        => $products,
             'totalPrice'      => $totalPrice,
             'shippingMethods' => $shippingMethods,
+            'branchOffices'   => $branchOffices,
         ]);
     }
 
@@ -94,12 +100,13 @@ class CartController extends Controller
         $shippingCost = ShippingMethod::select('cost')->where('id', $request->input_shipping_id)->first();
         $cart = Session::get('cart', []);
 
-        $purchaseInformation = $this->calculateTotalPrice($cart, $shippingCost->cost);
+        $purchaseInformation = $this->calculateTotalPrice($cart, ($shippingCost) ? $shippingCost->cost : 0);
 
         // Obtener la vista correspondiente según el método de envío
         $method = match(true) {
             $request->input_shipping_method === "home-delivery" => view('shop.checkout-delivery', ['purchaseInformation' => $purchaseInformation]),
-            $request->input_shipping_method === "store-pickup"  => "<h1>Hello Pickup</h1>",
+            $request->input_shipping_method === "store-pickup"  => $request->input_payment_method === "in-store" ? redirect(config('app.admin_url') . "/api/v1/pickup-order") 
+                                                                                                                 : view('shop.checkout-online-pickup', ['purchaseInformation' => $purchaseInformation, 'clientInfo' => User::select('name', 'last_name', 'email', 'phone')->where('id', auth()->id())->first()->toArray(), 'preference' => $preference = $this->returnPreference($purchaseInformation)]),
             default                                             => redirect('/404')
         };
 
@@ -109,25 +116,12 @@ class CartController extends Controller
     public function validateClientData(Request $request)
     {
         // Obtener los inputs hidden
-        $clientToken  = $request->input('saved_client');
+        $clientToken = $request->input('saved_client');
         $addressToken = $request->input('saved_address');
-
-        // Si el cliente no existe (por el token), crearlo
-        if (!$request->filled('saved_client')) {
-            $client = Client::create([
-                'token'      => Str::uuid(),  // Generar un token único
-                'user_id'    => auth()->id(),
-                'first_name' => $request->first_name,
-                'last_name'  => $request->last_name,
-                'phone'      => $request->phone,
-            ]);
-
-            $clientToken = $client->token;  // Guardar el token único recién creado
-        }
 
         // Si el cliente no selecciona una dirección guardada, guardar la que ingresó
         if (!$request->filled('saved_address')) {
-            $address = $client->addresses()->create([
+            $address = Address::create([
                 'token'           => Str::uuid(),  // Generar un token único
                 'user_id'         => auth()->id(),
                 'street'          => $request->street,
@@ -150,20 +144,9 @@ class CartController extends Controller
         $purchaseInformation = $this->calculateTotalPrice($cart, $shippingCost->cost);
 
         // Crear la preferencia de Mercado Pago
-        $preferenceData = [
-            'items' => $purchaseInformation['products']->map(function ($product) {
-                return [
-                    'title' => $product->name,
-                    'quantity' => (integer) $product->quantity,
-                    'unit_price' => (float) $product->price,  // Asegúrate de que sea un float
-                ];
-            })->values()->toArray(),  // Usamos ->values() para garantizar que el array de items esté indexado numéricamente
-            'external_reference' => $clientToken,  // Usamos el token del cliente como referencia externa
-        ];
+        $preference = $this->returnPreference($purchaseInformation);
 
-        $preference = $this->mercadoPagoService->createPreference($preferenceData);
-
-        $clientInfo = Client::select('first_name', 'last_name', 'phone')->where('token', $clientToken)->first()->toArray();
+        $clientInfo = User::select('name', 'last_name', 'email', 'phone')->where('user_token', $clientToken)->first()->toArray();
         $addressInfo = Address::select('street', 'external_number', 'internal_number', 'neighborhood', 'city', 'state', 'postal_code', 'country', 'reference')->where('token', $addressToken)->first()->toArray();
 
         // Pasar la preferencia a la vista junto con otra información
@@ -362,11 +345,32 @@ class CartController extends Controller
         $totalPrice += $shippingCost;
 
         return [
-            'client'          => Client::where('user_id', Auth::user()->id)->first(),
+            'client'          => User::select('user_token', 'name', 'last_name', 'email', 'phone')->where('id', Auth::user()->id)->first(),
             'products'        => $products,
             'quantity'        => $cart[$product->id],
             'shippingCost'    => $shippingCost,
             'totalPrice'      => $totalPrice,
         ];
+    }
+
+    /**
+     * Return the preference for the online pickup payment.
+     *
+     * @param array $purchaseInformation
+     * @return array
+     */
+    private function returnPreference($purchaseInformation)
+    {
+        $preferenceData = [
+            'items' => $purchaseInformation['products']->map(function ($product) {
+                return [
+                    'title' => $product->name,
+                    'quantity' => (integer) $product->quantity,
+                    'unit_price' => (float) $product->price,
+                ];
+            })->values()->toArray(),
+        ];
+
+        return $this->mercadoPagoService->createPreference($preferenceData);
     }
 }

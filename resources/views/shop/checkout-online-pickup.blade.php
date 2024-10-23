@@ -20,11 +20,6 @@
                             <p><span class="product-info">{{ ucfirst($key) }}:</span> <span class="product-info" style="color: var(--background-10);">{{ $value }}</span></p>
                         </div>
                     @endforeach
-                    @foreach ($addressInfo as $key => $value)
-                        <div class="col-6">
-                            <p><span class="product-info">{{ ucfirst($key) }}:</span> <span class="product-info" style="color: var(--background-10);">{{ $value }}</span></p>
-                        </div>
-                    @endforeach
                 </div>
                 
                 <!-- MeracadoPago button container  -->

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,9 +18,15 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'user_token',
         'name',
         'email',
+        'phone',
         'password',
+        'verified_at',
+        'admin_id',
+        'external_id',
+        'external_auth',
     ];
 
     /**
@@ -43,5 +50,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Set the admin relation.
+     *
+     * @return 
+     */
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
+    }
+
+    // Relationship to access the branch office through the admin
+    public function branchOffice()
+    {
+        // We use the indirect relationship through 'admin'
+        return $this->hasOneThrough(BranchOffice::class, Admin::class, 'id', 'id', 'admin_id', 'branch_id');
     }
 }
