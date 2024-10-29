@@ -9613,6 +9613,7 @@ body.modal {
     margin: auto; 
     margin-top: 25px;
     position: absolute; 
+    width: 87%;
     bottom: 30px;
 }
 
