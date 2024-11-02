@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Inventory;
+use App\Models\PickupOrder;
 use App\Models\BranchOffice;
 use App\Models\ShippingMethod;
 use App\Services\MercadoPagoService;
@@ -42,7 +43,7 @@ class CartController extends Controller
         $cart = Session::get('cart', []);
 
         // If car is empty, redirect the user to Products with a message
-        if(empty($cart)) {
+        if (empty($cart)) {
             return redirect('/productos/todos');
         }
 
@@ -105,27 +106,86 @@ class CartController extends Controller
      */
     public function checkoutForm(Request $request)
     {
-        // Guardar los datos del formulario en la variable de sesión "hidden_inputs"
+        $this->storeHiddenInputsInSession($request);
+
+        $shippingCost = $this->getShippingCost($request->input_shipping_id);
+        $cart = Session::get('cart', []);
+        $purchaseInformation = $this->calculateTotalPrice($cart, $shippingCost);
+
+        return $this->getCheckoutView($request, $purchaseInformation);
+    }
+
+    /**
+     * Store the hidden input values in the session.
+     */
+    protected function storeHiddenInputsInSession(Request $request): void
+    {
         Session::put('hidden_inputs', $request->only([
             'input_shipping_method',
             'input_payment_method',
             'input_shipping_id'
         ]));
+    }
 
-        $shippingCost = ShippingMethod::select('cost')->where('id', $request->input_shipping_id)->first();
-        $cart = Session::get('cart', []);
+    /**
+     * Retrieve the shipping cost based on the provided shipping ID.
+     */
+    protected function getShippingCost($shippingId): float
+    {
+        return ShippingMethod::where('id', $shippingId)->value('cost') ?? 0;
+    }
 
-        $purchaseInformation = $this->calculateTotalPrice($cart, ($shippingCost) ? $shippingCost->cost : 0);
+    /**
+     * Determine the correct view or redirect based on the shipping and payment methods.
+     */
+    protected function getCheckoutView(Request $request, array $purchaseInformation)
+    {
+        $shippingMethod = $request->input_shipping_method;
+        $paymentMethod = $request->input_payment_method;
+        
+        return match (true) {
+            $shippingMethod === 'home-delivery' => view('shop.checkout-delivery', [
+                'purchaseInformation' => $purchaseInformation
+            ]),
 
-        // Obtener la vista correspondiente según el método de envío
-        $method = match(true) {
-            $request->input_shipping_method === "home-delivery" => view('shop.checkout-delivery', ['purchaseInformation' => $purchaseInformation]),
-            $request->input_shipping_method === "store-pickup"  => $request->input_payment_method === "in-store" ? redirect(config('app.admin_url') . "/api/v1/pickup-order") 
-                                                                                                                 : view('shop.checkout-online-pickup', ['purchaseInformation' => $purchaseInformation, 'clientInfo' => User::select('name', 'last_name', 'email', 'phone')->where('id', auth()->id())->first()->toArray(), 'preference' => $preference = $this->returnPreference($purchaseInformation)]),
-            default                                             => redirect('/404')
+            $shippingMethod === 'store-pickup' && $paymentMethod === 'in-store' => $this->createPickupOrder($purchaseInformation),
+
+            $shippingMethod === 'store-pickup' && $paymentMethod === 'online' => view('shop.checkout-online-pickup', [
+                'purchaseInformation' => $purchaseInformation,
+                'clientInfo' => get_client_info(),
+                'preference' => $this->returnPreference($purchaseInformation)
+            ]),
+
+            default => redirect('/404'),
         };
+    }
+    
+    protected function createPickupOrder($purchaseInformation)
+    {
+        // Convierte el modelo User y la colección de productos en arrays
+        $purchaseInformationArray = [
+            'client' => $purchaseInformation['client']->toArray(),
+            'products' => $purchaseInformation['products']->toArray(),
+            'quantity' => $purchaseInformation['quantity'],
+            'shippingCost' => $purchaseInformation['shippingCost'],
+            'totalPrice' => $purchaseInformation['totalPrice'],
+        ];
 
-        return $method;
+        // Generar código QR (o cualquier identificador único necesario)
+        $qrCode = Str::random(12); // Puedes ajustar la generación del QR según tus necesidades
+
+        // Crear la orden de recogida en la base de datos
+        $pickupOrder = PickupOrder::create([
+            'qr_code' => $qrCode,
+            'user_id' => auth()->id(),
+            'status' => 'pending',
+            'payment_method' => 'in-store',
+            'total_price' => $purchaseInformation['totalPrice'],
+            'items' => json_encode($purchaseInformationArray['products']),
+        ]);
+
+        // Redirigir a la API con el user_token del usuario autenticado
+        return redirect(config('app.admin_url') . "/api/v1/pickup-order/$qrCode");
     }
 
     public function validateClientData(Request $request)
@@ -217,8 +277,8 @@ class CartController extends Controller
         Session::put('cart', $cart);
 
         // Message based on the presence of the 'buy' parameter in the request
-        $message = $request->has('buy') 
-            ? 'Producto agregado correctamente. Procede al pago.' 
+        $message = $request->has('buy')
+            ? 'Producto agregado correctamente. Procede al pago.'
             : 'Producto agregado al carrito de compras';
 
 
@@ -226,9 +286,9 @@ class CartController extends Controller
             // Redirect to payment route with success message
             return redirect()->route('cart')->with('success', $message);
         }
-        
+
         // Redirect back with a success message
-        return redirect()->back()->with('success-cart', $message);   
+        return redirect()->back()->with('success-cart', $message);
     }
 
     /**
@@ -249,12 +309,12 @@ class CartController extends Controller
         ]);
 
         // Determine the quantity change based on which button was clicked
-        $quantityDelta = match(true) {
+        $quantityDelta = match (true) {
             $request->has('plus')  => 1,
             $request->has('minus') => -1,
             default                => null
         };
-        
+
         $productId = $request->product_id;
         $quantity = ($request->quantity + $quantityDelta);
 
@@ -266,7 +326,7 @@ class CartController extends Controller
             // Check if the quantity exceeds the available stock
             if ($this->isQuantityExceedingStock($productId, $quantity)) {
                 return redirect()->back()->with('error', 'La cantidad seleccionada excede el stock disponible para este producto.');
-            } 
+            }
 
             // If quantity is 0, remove the product from the cart
             if ($quantity === 0) {
@@ -334,7 +394,7 @@ class CartController extends Controller
     public function calculateTotalPrice($cart, $shippingCost = 0)
     {
         // If car is empty, redirect the user to Products with a message
-        if(empty($cart)) {
+        if (empty($cart)) {
             return redirect('/productos/todos');
         }
 
@@ -351,7 +411,7 @@ class CartController extends Controller
 
         foreach ($products as $product) {
             $product->stock = $product->inventory->stock ?? 0; // Use stock from the loaded inventory relation
-            $product->quantity = $cart[$product->id];
+            $product->quantity = (int) $cart[$product->id];
             $product->total = $product->price * $product->quantity;
             $totalPrice += $product->total;
         }
@@ -380,7 +440,7 @@ class CartController extends Controller
             'items' => $purchaseInformation['products']->map(function ($product) {
                 return [
                     'title' => $product->name,
-                    'quantity' => (integer) $product->quantity,
+                    'quantity' => (int) $product->quantity,
                     'unit_price' => (float) $product->price,
                 ];
             })->values()->toArray(),

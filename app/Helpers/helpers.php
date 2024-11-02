@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Carbon\Carbon;
 
 /**
@@ -74,5 +75,23 @@ if (!function_exists('discounted_price'))
         $finalPrice = $price - $discountAmount;
         
         return price_formatted($finalPrice);
+    }
+}
+
+if (!function_exists('get_client_info')) 
+{
+    /**
+     * Get client information.
+     *
+     * This function returns the client information.
+     *
+     * @return array The client information.
+     */
+    function get_client_info(): array
+    {
+        return User::select('name', 'last_name', 'email', 'phone')
+            ->where('id', auth()->id())
+            ->first()
+            ->toArray();
     }
 }

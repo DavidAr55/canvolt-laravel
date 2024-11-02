@@ -1,6 +1,6 @@
 @extends('layouts.home-layout')
 
-@section('title', 'Mi carrito')
+@section('title', 'Canvolt - Mi carrito')
 
 @section('content')
 
