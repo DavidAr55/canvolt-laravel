@@ -79,6 +79,21 @@ class CartController extends Controller
         ]);
     }
 
+    public function mercadopagoSuccess()
+    {
+        return view('shop.mercadopago-success');
+    }
+
+    public function mercadopagoPending()
+    {
+        return view('shop.mercadopago-pending');
+    }
+
+    public function mercadopagoFailure()
+    {
+        return view('shop.mercadopago-failure');
+    }
+
     /**
      * Display the contents of the cart.
      *
@@ -354,7 +369,7 @@ class CartController extends Controller
     }
 
     /**
-     * Return the preference for the online pickup payment.
+     * Return the preference for the online payment.
      *
      * @param array $purchaseInformation
      * @return array
@@ -369,6 +384,14 @@ class CartController extends Controller
                     'unit_price' => (float) $product->price,
                 ];
             })->values()->toArray(),
+            
+            // Configura las URLs de retorno y el redireccionamiento automático
+            'back_urls' => [
+                'success' => route('mercadopago.success'),   // URL para pago aprobado
+                'failure' => route('mercadopago.failure'),   // URL para pago rechazado
+                'pending' => route('mercadopago.pending')    // URL para pago pendiente
+            ],
+            'auto_return' => 'approved', // Redirección automática solo para pagos aprobados
         ];
 
         return $this->mercadoPagoService->createPreference($preferenceData);
