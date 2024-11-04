@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use App\Models\Client;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Contracts\View\View;
@@ -184,8 +185,24 @@ class CartController extends Controller
             'items' => json_encode($purchaseInformationArray['products']),
         ]);
 
-        // Redirigir a la API con el user_token del usuario autenticado
-        return redirect(config('app.admin_url') . "/api/v1/pickup-order/$qrCode");
+        // Enviar la solicitud POST a la API con los datos de la orden de recogida
+        $response = Http::post(config('app.admin_url') . '/api/v1/pickup-order', [
+            'qr_code' => $pickupOrder->qr_code,
+            'user_id' => $pickupOrder->user_id,
+            'status' => $pickupOrder->status,
+            'payment_method' => $pickupOrder->payment_method,
+            'total_price' => $pickupOrder->total_price,
+            'items' => $pickupOrder->items,
+        ]);
+
+        // Opcional: Manejar la respuesta de la API
+        if ($response->successful()) {
+            // Realiza alguna acción si es necesario cuando la solicitud es exitosa
+            echo '<h2 style="color: green;">Orden de recogida enviada a la API correctamente</h2>';
+        } else {
+            // Maneja el caso en que la solicitud falle
+            echo '<h2 style="color: red;">Error al enviar la solicitud a la API</h2>';
+        }
     }
 
     public function validateClientData(Request $request)
