@@ -83,6 +83,13 @@ class CartController extends Controller
 
     public function mercadopagoSuccess()
     {
+        $preference = Session::get('preference');
+        $message = ($preference['canvolt_method'] === 'online-pickup')
+            ? 'Tu pedido ha sido creado correctamente, para recogerlo en nuestra sucursal, lleva el siguiente código QR con tigo a nuestra sucursal:'
+            : 'Tu pedido ha sido creado correctamente, para que te sea enviado a domicilio, te enviaremos un correo cuando tu pedido sea enviado.';
+
+
+
         return view('shop.mercadopago-success');
     }
 
@@ -143,7 +150,7 @@ class CartController extends Controller
     {
         $shippingMethod = $request->input_shipping_method;
         $paymentMethod = $request->input_payment_method;
-        
+
         return match (true) {
             $shippingMethod === 'home-delivery' => view('shop.checkout-delivery', [
                 'purchaseInformation' => $purchaseInformation
@@ -154,13 +161,13 @@ class CartController extends Controller
             $shippingMethod === 'store-pickup' && $paymentMethod === 'online' => view('shop.checkout-online-pickup', [
                 'purchaseInformation' => $purchaseInformation,
                 'clientInfo' => get_client_info(),
-                'preference' => $this->returnPreference($purchaseInformation)
+                'preference' => $this->returnPreference($purchaseInformation, 'online-pickup')
             ]),
 
             default => redirect('/404'),
         };
     }
-    
+
     protected function createPickupOrder($purchaseInformation)
     {
         // Convierte el modelo User y la colección de productos en arrays
@@ -197,11 +204,12 @@ class CartController extends Controller
 
         // Opcional: Manejar la respuesta de la API
         if ($response->successful()) {
-            // Realiza alguna acción si es necesario cuando la solicitud es exitosa
-            echo '<h2 style="color: green;">Orden de recogida enviada a la API correctamente</h2>';
+            // vaciar el carrito
+            Session::forget('cart');
+            return redirect()->route('home')->with('success', 'Orden para recoger creada correctamente, revisa tu correo electrónico para obtener tu código QR');
         } else {
             // Maneja el caso en que la solicitud falle
-            echo '<h2 style="color: red;">Error al enviar la solicitud a la API</h2>';
+            return redirect()->route('cart')->with('error', 'Error al enviar la solicitud a la API');
         }
     }
 
@@ -236,7 +244,7 @@ class CartController extends Controller
         $purchaseInformation = $this->calculateTotalPrice($cart, $shippingCost->cost);
 
         // Crear la preferencia de Mercado Pago
-        $preference = $this->returnPreference($purchaseInformation);
+        $preference = $this->returnPreference($purchaseInformation, 'online-delivery');
 
         $clientInfo = User::select('name', 'last_name', 'email', 'phone')->where('user_token', $clientToken)->first()->toArray();
         $addressInfo = Address::select('street', 'external_number', 'internal_number', 'neighborhood', 'city', 'state', 'postal_code', 'country', 'reference')->where('token', $addressToken)->first()->toArray();
@@ -451,8 +459,10 @@ class CartController extends Controller
      * @param array $purchaseInformation
      * @return array
      */
-    private function returnPreference($purchaseInformation)
+    private function returnPreference($purchaseInformation, $canvoltMethod = null)
     {
+        $userToken = $purchaseInformation['client']->user_token;
+
         $preferenceData = [
             'items' => $purchaseInformation['products']->map(function ($product) {
                 return [
@@ -461,15 +471,18 @@ class CartController extends Controller
                     'unit_price' => (float) $product->price,
                 ];
             })->values()->toArray(),
-            
+
             // Configura las URLs de retorno y el redireccionamiento automático
             'back_urls' => [
-                'success' => route('mercadopago.success'),   // URL para pago aprobado
-                'failure' => route('mercadopago.failure'),   // URL para pago rechazado
-                'pending' => route('mercadopago.pending')    // URL para pago pendiente
+                'success' => route('mercadopago.success', ['user_token' => $userToken]), // URL para pago aprobado
+                'failure' => route('mercadopago.failure', ['user_token' => $userToken]), // URL para pago rechazado
+                'pending' => route('mercadopago.pending', ['user_token' => $userToken])  // URL para pago pendiente
             ],
             'auto_return' => 'approved', // Redirección automática solo para pagos aprobados
+            'canvolt_method' => $canvoltMethod,
         ];
+
+        Session::put('preference', $preferenceData);
 
         return $this->mercadoPagoService->createPreference($preferenceData);
     }

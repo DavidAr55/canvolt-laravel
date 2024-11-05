@@ -10,7 +10,7 @@ Route::get('/', function () {
     return redirect('/inicio');
 });
 
-Route::get('/inicio', [HomeController::class, 'index'])->name('inicio');
+Route::get('/inicio', [HomeController::class, 'index'])->name('home');
 
 Route::get('/iniciar-sesion', function () {
     return view('auth.login-register');
@@ -35,6 +35,6 @@ Route::post('/carrito/pago', [CartController::class, 'validateClientData'])->nam
 Route::get('/carrito/pago/online', [CartController::class, 'payOnline'])->name('cart.pay.online');
 
 // Rutas Callback de Mercado Pago
-Route::get('/mercadopago/success', [CartController::class, 'mercadopagoSuccess'])->name('mercadopago.success');
-Route::get('/mercadopago/pending', [CartController::class, 'mercadopagoPending'])->name('mercadopago.pending');
-Route::get('/mercadopago/failure', [CartController::class, 'mercadopagoFailure'])->name('mercadopago.failure');
+Route::get('/mercadopago/success/user_token/{user_token}', [CartController::class, 'mercadopagoSuccess'])->name('mercadopago.success');
+Route::get('/mercadopago/pending/user_token/{user_token}', [CartController::class, 'mercadopagoPending'])->name('mercadopago.pending');
+Route::get('/mercadopago/failure/user_token/{user_token}', [CartController::class, 'mercadopagoFailure'])->name('mercadopago.failure');
